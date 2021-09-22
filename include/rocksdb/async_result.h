@@ -33,7 +33,10 @@ struct async_result {
       return std::suspend_never{};
     }
 
-    void unhandled_exception() { std::exit(1); }
+    void unhandled_exception() {
+      std::cout<<"reach exit"<<std::endl;
+      std::exit(1);
+    }
 
     void return_value(Status result) { 
       result_ = result; 
