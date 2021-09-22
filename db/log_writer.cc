@@ -175,8 +175,10 @@ async_result Writer::AsyncAddRecord(const Slice& slice) {
 
   if (s.ok()) {
     if (!manual_flush_) {
+      std::cout<<"before AsyncFlush call"<<std::endl;
       auto result = dest_->AsyncFlush();
       co_await result;
+      std::cout<<"resume from AsyncFlush"<<std::endl;
       s = result.io_result();
     }
   }

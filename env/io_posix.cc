@@ -1303,9 +1303,10 @@ async_result PosixWritableFile::AsyncAppend(const Slice& data,
   }
   const char* src = data.data();
   size_t nbytes = data.size();
-
+  std::cout<<"before AsyncPosixWrite call"<<std::endl;
   auto result = AsyncPosixWrite(fd_, src, nbytes);
   co_await result;
+  std::cout<<"resume from AsyncPosixWrite"<<std::endl;
   if (!result.posix_result()) {
     co_return IOError("While appending to file", filename_, errno);
   }
