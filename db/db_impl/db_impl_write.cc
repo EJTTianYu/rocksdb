@@ -765,6 +765,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
         last_sequence = versions_->FetchAddLastAllocatedSequence(seq_inc);
       }
     }
+    std::cout<<"reach line 768"<<std::endl;
     status = io_s;
     assert(last_sequence != kMaxSequenceNumber);
     const SequenceNumber current_sequence = last_sequence + 1;
@@ -800,7 +801,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
         }
       }
     }
-
+    std::cout<<"reach line 804"<<std::endl;
     if (status.ok()) {
       PERF_TIMER_GUARD(write_memtable_time);
 
@@ -849,7 +850,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
   } else {
     assert(io_s.ok() && pre_release_cb_status.ok());
   }
-
+  std::cout<<"reach line 853"<<std::endl;
   if (need_log_sync) {
     mutex_.Lock();
     if (status.ok()) {
@@ -861,6 +862,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
     // Requesting sync with two_write_queues_ is expected to be very rare. We
     // hence provide a simple implementation that is not necessarily efficient.
     if (two_write_queues_) {
+      std::cout<<"reach line 865"<<std::endl;
       if (manual_wal_flush_) {
         auto result = AsyncFlushWAL(true);
         co_await result;
@@ -888,7 +890,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
     MemTableInsertStatusCheck(w.status);
     write_thread_.ExitAsBatchGroupLeader(write_group, status);
   }
-
+  std::cout<<"reach line 893"<<std::endl;
   if (status.ok()) {
     status = w.FinalStatus();
   }
