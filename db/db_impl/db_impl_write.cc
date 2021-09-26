@@ -59,7 +59,7 @@ async_result DBImpl::AsyncWrite(const WriteOptions& write_options, WriteBatch* m
   auto result = AsyncWriteImpl(write_options, my_batch, nullptr, nullptr);
   co_await result;
   std::cout<<"resume from AsyncWriteImpl"<<std::endl;
-  co_return result.io_result();
+  co_return result.posix_result();
 }
 
 #ifndef ROCKSDB_LITE
@@ -896,8 +896,9 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
   }
   std::cout<<"reach line 897"<<std::endl;
   // use status to build io_stats, only used for test
-  IOStatus ioStatus{status.code(), status.subcode()};
-  co_return ioStatus;
+  co_return true;
+//  IOStatus ioStatus{status.code(), status.subcode()};
+//  co_return ioStatus;
 }
 
 Status DBImpl::PipelinedWriteImpl(const WriteOptions& write_options,
@@ -2973,7 +2974,7 @@ async_result DBImpl::AsyncPut(const WriteOptions& opt, ColumnFamilyHandle* colum
     auto result = AsyncWrite(opt, &batch);
     co_await result;
     std::cout<<"resume from AsyncWrite"<<std::endl;
-    co_return result.io_result();
+    co_return result.posix_result();
   }
   const Slice* ts = opt.timestamp;
   assert(nullptr != ts);
@@ -2992,7 +2993,7 @@ async_result DBImpl::AsyncPut(const WriteOptions& opt, ColumnFamilyHandle* colum
   }
   auto result = AsyncWrite(opt, &batch);
   co_await result;
-  co_return result.io_result();
+  co_return result.posix_result();
 }
 
 Status DB::Delete(const WriteOptions& opt, ColumnFamilyHandle* column_family,
