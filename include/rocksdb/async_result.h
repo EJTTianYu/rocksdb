@@ -38,11 +38,12 @@ struct async_result {
       std::exit(1);
     }
 
-    void return_value(Status result) { 
-      result_ = result; 
+    void return_value(Status result) {
+      result_ = result;
       result_set_ = true;
     }
 
+    // use this to return IOStatus related class
     void return_value(IOStatus io_result) {
       io_result_ = io_result;
       result_set_ = true;
