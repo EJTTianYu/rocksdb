@@ -25,6 +25,7 @@ struct async_result {
     auto initial_suspend() { return std::suspend_never{};}
 
     auto final_suspend() noexcept {
+      std::cout << "return here" <<std::endl;
       if (prev_ != nullptr) {
         auto h = std::coroutine_handle<promise_type>::from_promise(*prev_);
         h.resume();
