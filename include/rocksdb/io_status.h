@@ -37,6 +37,11 @@ class IOStatus : public Status {
 
   // Create a success status.
   IOStatus() : IOStatus(kOk, kNone) {}
+  explicit IOStatus(Code _code, SubCode _subcode = kNone)
+      : Status(_code, _subcode),
+        retryable_(false),
+        data_loss_(false),
+        scope_(kIOErrorScopeFileSystem) {}
   ~IOStatus() {}
 
   // Copy the specified status.
@@ -140,12 +145,6 @@ class IOStatus : public Status {
   bool retryable_;
   bool data_loss_;
   IOErrorScope scope_;
-
-  explicit IOStatus(Code _code, SubCode _subcode = kNone)
-      : Status(_code, _subcode),
-        retryable_(false),
-        data_loss_(false),
-        scope_(kIOErrorScopeFileSystem) {}
 
   IOStatus(Code _code, SubCode _subcode, const Slice& msg, const Slice& msg2);
   IOStatus(Code _code, const Slice& msg, const Slice& msg2)
