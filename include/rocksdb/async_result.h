@@ -26,11 +26,14 @@ struct async_result {
 
     auto final_suspend() noexcept {
       std::cout << "return here" <<std::endl;
+      std::cout << (prev_ != nullptr) <<std::endl;
       if (prev_ != nullptr) {
+        std::cout << "return resume point" <<std::endl;
         auto h = std::coroutine_handle<promise_type>::from_promise(*prev_);
         h.resume();
+        std::cout << "after resume point" <<std::endl;
       }
-
+      std::cout << "return here 2" <<std::endl;
       return std::suspend_never{};
     }
 
