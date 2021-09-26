@@ -894,6 +894,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
   if (status.ok()) {
     status = w.FinalStatus();
   }
+  std::cout<<"reach line 897"<<std::endl;
   // use status to build io_stats, only used for test
   IOStatus ioStatus{status.code(), status.subcode()};
   co_return ioStatus;
