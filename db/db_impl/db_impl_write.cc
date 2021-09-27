@@ -57,8 +57,8 @@ Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
 async_result DBImpl::AsyncWrite(const WriteOptions& write_options, WriteBatch* my_batch) {
   std::cout<<"before AsyncWriteImpl call"<<std::endl;
   auto result = AsyncWriteImpl(write_options, my_batch, nullptr, nullptr);
-  std::cout<<"resume from AsyncWriteImpl"<<std::endl;
   co_await result;
+  std::cout<<"resume from AsyncWriteImpl"<<std::endl;
   co_return result.result();
 }
 
