@@ -26,7 +26,7 @@ struct async_result {
     auto initial_suspend() { return std::suspend_never{};}
 
     auto final_suspend() noexcept {
-      std::cout << std::this_thread::get_id() << " this promise pointer in final suspend:" << (void *) this
+      std::cout << " this promise pointer in final suspend:" << (void *) this
                 << " prev:" << prev_ << std::endl;
       if (prev_ != nullptr) {
         std::cout << "resume prev here" << std::endl;
