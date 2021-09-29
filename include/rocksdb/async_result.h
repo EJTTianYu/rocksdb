@@ -26,11 +26,12 @@ struct async_result {
     auto initial_suspend() { return std::suspend_never{};}
 
     auto final_suspend() noexcept {
-      std::cout << " this promise pointer in final suspend:" << (void *) this
+      auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout << " this promise in final suspend, handler" << hh.address()
                 << " prev:" << prev_ << std::endl;
       if (prev_ != nullptr) {
-        std::cout << "resume prev here" << std::endl;
         auto h = std::coroutine_handle<promise_type>::from_promise(*prev_);
+        std::cout << "resume prev here, prev handle" << h.address() << std::endl;
         h.resume();
       }
 
@@ -78,6 +79,7 @@ struct async_result {
     if (async_) {
       return false;
     } else {
+      std::cout<<"h_address"<<h_.address()<<std::endl;
       std::cout<<"h_.done():"<<h_.done()<<"\n";
       std::cout<<"result_set_:"<<h_.promise().result_set_<<"\n";
       return h_.promise().result_set_;
