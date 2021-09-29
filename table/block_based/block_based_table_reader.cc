@@ -1782,6 +1782,7 @@ async_result BlockBasedTable::AsyncMaybeReadBlockAndLoadToCache(
   }
 
   assert(s.ok() || block_entry->GetValue() == nullptr);
+  std::cout << "reach line 1785 here" << std::endl;
   co_return s;
 }
 
