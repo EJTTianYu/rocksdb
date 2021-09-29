@@ -19,13 +19,17 @@ struct async_result {
   struct promise_type {
     async_result get_return_object() {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
       return async_result(h);
     }
 
     auto initial_suspend() { return std::suspend_never{};}
 
     auto final_suspend() noexcept {
+      std::cout << std::this_thread::get_id() << " this promise pointer in final suspend:" << (void *) this
+                << " prev:" << prev_ << std::endl;
       if (prev_ != nullptr) {
+        std::cout << "resume prev here" << std::endl;
         auto h = std::coroutine_handle<promise_type>::from_promise(*prev_);
         h.resume();
       }
@@ -38,16 +42,22 @@ struct async_result {
     void return_value(Status result) { 
       result_ = result; 
       result_set_ = true;
+      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
     }
 
     void return_value(IOStatus io_result) {
       io_result_ = io_result;
       result_set_ = true;
+      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
     }
 
     void return_value(bool posix_write_result) {
       posix_write_result_ = posix_write_result;
       result_set_ = true;
+      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
     }
 
     promise_type* prev_ = nullptr;
