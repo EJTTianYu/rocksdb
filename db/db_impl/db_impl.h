@@ -186,6 +186,10 @@ class DBImpl : public DB {
                      ColumnFamilyHandle* column_family, const Slice& key,
                      PinnableSlice* value, std::string* timestamp) override;
 
+  async_result test_direct_co_return() {
+    co_return Status::OK();
+  }
+
   using DB::GetMergeOperands;
   Status GetMergeOperands(const ReadOptions& options,
                           ColumnFamilyHandle* column_family, const Slice& key,

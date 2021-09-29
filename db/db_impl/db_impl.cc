@@ -1819,6 +1819,12 @@ async_result DBImpl::AsyncGet(const ReadOptions& read_options,
   get_impl_options.column_family = column_family;
   get_impl_options.value = value;
   get_impl_options.timestamp = timestamp;
+
+  std::cout<<"before test call"<<std::endl;
+  auto ret = test_direct_co_return();
+  co_await ret;
+  std::cout<<"resume from test"<<std::endl;
+
   std::cout<<"before AsyncGetImpl call"<<std::endl;
   auto result = AsyncGetImpl(read_options, key, get_impl_options);
   co_await result;
