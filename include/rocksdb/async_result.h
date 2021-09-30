@@ -25,7 +25,7 @@ struct async_result {
     async_result get_return_object() {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
       std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
-      return async_result(h, *this);
+      return async_result(h, this);
     }
 
     auto initial_suspend() { return std::suspend_never{};}
@@ -79,8 +79,8 @@ struct async_result {
 
   async_result(bool async, struct file_page* context) : async_(async), context_(context) {}
 
-  async_result(std::coroutine_handle<promise_type> h, promise_type promise) : h_{h} {
-    *promise_ = promise;
+  async_result(std::coroutine_handle<promise_type> h, promise_type *promise) : h_{h} {
+    promise_ = promise;
   }
 
   bool await_ready() const noexcept { 
