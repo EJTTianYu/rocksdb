@@ -28,12 +28,12 @@ struct ret_back {
 struct async_result {
   struct promise_type {
     ~promise_type() {
-      auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
+//      auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
 //      std::cout <<"handle:" << hh.address() << " done:" << hh.done() << std::endl;
     }
 
     async_result get_return_object() {
-      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
+//      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
 //      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
       ret_back ret{};
       ret_back_promise = &ret;
