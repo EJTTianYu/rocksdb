@@ -15,28 +15,36 @@ namespace ROCKSDB_NAMESPACE {
 
 struct file_page;
 
+// used to store co_return value
+struct ret_back {
+  // whether the result has be co_returned
+  bool result_set_ = false;
+  // different return type by coroutine
+  Status result_;
+  IOStatus io_result_;
+  bool posix_write_result_;
+};
+
 struct async_result {
   struct promise_type {
     ~promise_type() {
       auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout <<"handle:" << hh.address() << " done:" << hh.done() << std::endl;
+//      std::cout <<"handle:" << hh.address() << " done:" << hh.done() << std::endl;
     }
 
     async_result get_return_object() {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
-      return async_result(h, this);
+//      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
+      ret_back ret{};
+      ret_back_promise = &ret;
+      return async_result(h, ret);
     }
 
     auto initial_suspend() { return std::suspend_never{};}
 
     auto final_suspend() noexcept {
-      auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << " this promise in final suspend, handler" << hh.address()
-                << " prev:" << prev_ << std::endl;
       if (prev_ != nullptr) {
         auto h = std::coroutine_handle<promise_type>::from_promise(*prev_);
-        std::cout << "resume prev here, prev handle" << h.address() << std::endl;
         h.resume();
       }
 
@@ -45,55 +53,36 @@ struct async_result {
 
     void unhandled_exception() { std::exit(1); }
 
-    void return_value(Status result) { 
-      result_ = result; 
-      result_set_ = true;
-      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << "result_set=" << h.promise().result_set_ << ",address=" <<
-          &h.promise().result_set_ << std::endl;
+    void return_value(Status result) {
+      ret_back_promise->result_ = result;
+      ret_back_promise->result_set_ = true;
     }
 
     void return_value(IOStatus io_result) {
-      io_result_ = io_result;
-      result_set_ = true;
-      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
+      ret_back_promise->io_result_ = io_result;
+      ret_back_promise->result_set_ = true;
     }
 
     void return_value(bool posix_write_result) {
-      posix_write_result_ = posix_write_result;
-      result_set_ = true;
-      auto h = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
+      ret_back_promise->posix_write_result_ = posix_write_result;
+      ret_back_promise->result_set_ = true;
     }
 
     promise_type* prev_ = nullptr;
-    bool result_set_ = false;
-    // different return type by coroutine
-    Status result_;
-    IOStatus io_result_;
-    bool posix_write_result_;
+    ret_back *ret_back_promise;
   };
 
   async_result() : async_(false) {}
 
   async_result(bool async, struct file_page* context) : async_(async), context_(context) {}
 
-  async_result(std::coroutine_handle<promise_type> h, promise_type *promise) : h_{h} {
-    promise_ = promise;
-  }
+  async_result(std::coroutine_handle<promise_type> h, ret_back& ret_back) : h_{h}, ret_back_{ret_back} {}
 
   bool await_ready() const noexcept { 
     if (async_) {
       return false;
     } else {
-      std::cout<<"h_address"<<h_.address()<<std::endl;
-      std::cout<<"h_.done():"<<h_.done()<<"\n";
-      std::cout<<"result_set_:"<<h_.promise().result_set_<< ",address=" <<
-                               &h_.promise().result_set_ <<"\n";
-      std::cout<<"promise:"<<promise_->result_set_<<",address=" <<
-          &promise_->result_set_<<std::endl;
-      return h_.promise().result_set_;
+      return ret_back_.result_set_;
     }
   }
 
@@ -101,18 +90,17 @@ struct async_result {
 
   void await_resume() const noexcept {}
 
-  Status result() { return h_.promise().result_; }
+  Status result() { return ret_back_.result_; }
 
-  IOStatus io_result() { return h_.promise().io_result_; }
+  IOStatus io_result() { return ret_back_.io_result_; }
 
-  bool posix_result() { return h_.promise().posix_write_result_; }
+  bool posix_result() { return ret_back_.posix_write_result_; }
 
   // test only
-  bool is_result_set() { return h_.promise().result_set_; }
+  bool is_result_set() { return ret_back_.result_set_; }
 
   std::coroutine_handle<promise_type> h_;
-  // to store co_return value
-  struct promise_type* promise_;
+  ret_back ret_back_;
   bool async_ = false;
   struct file_page* context_;
 };
