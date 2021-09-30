@@ -55,8 +55,10 @@ Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
 }
 
 async_result DBImpl::AsyncWrite(const WriteOptions& write_options, WriteBatch* my_batch) {
+  std::cout<<"before AsyncWriteImpl call"<<std::endl;
   auto result = AsyncWriteImpl(write_options, my_batch, nullptr, nullptr);
   co_await result;
+  std::cout<<"resume from AsyncWriteImpl"<<std::endl;
   co_return result.result();
 }
 
@@ -741,10 +743,12 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
     if (!two_write_queues_) {
       if (status.ok() && !write_options.disableWAL) {
         PERF_TIMER_GUARD(write_wal_time);
+        std::cout<<"before AsyncWriteToWAL call"<<std::endl;
         auto result = AsyncWriteToWAL(write_group, log_writer, log_used,
                                       need_log_sync, need_log_dir_sync,
                                       last_sequence + 1);
         co_await result;
+        std::cout<<"resume from AsyncWriteToWAL"<<std::endl;
         io_s = result.io_result();
       }
     } else {
@@ -888,6 +892,7 @@ async_result DBImpl::AsyncWriteImpl(const WriteOptions& write_options,
   if (status.ok()) {
     status = w.FinalStatus();
   }
+  std::cout<<"reach line 895"<<std::endl;
   co_return status;
 }
 
@@ -1880,8 +1885,10 @@ async_result DBImpl::AsyncWriteToWAL(const WriteBatch& merged_batch,
     log_write_mutex_.Lock();
   }
 
+  std::cout<<"before AsyncAddRecord call"<<std::endl;
   auto result = log_writer->AsyncAddRecord(log_entry);
   co_await result;
+  std::cout<<"resume from AsyncAddRecord"<<std::endl;
   IOStatus io_s = result.io_result();
 
   if (UNLIKELY(needs_locking)) {
@@ -1989,8 +1996,10 @@ async_result DBImpl::AsyncWriteToWAL(const WriteThread::WriteGroup& write_group,
   WriteBatchInternal::SetSequence(merged_batch, sequence);
 
   uint64_t log_size;
+  std::cout<<"before AsyncWriteToWAL2 call"<<std::endl;
   auto result = AsyncWriteToWAL(*merged_batch, log_writer, log_used, &log_size);
   co_await result;
+  std::cout<<"resume from AsyncWriteToWAL2"<<std::endl;
   io_s = result.io_result();
   if (to_be_cached_state) {
     cached_recoverable_state_ = *to_be_cached_state;
@@ -2976,8 +2985,10 @@ async_result DBImpl::AsyncPut(const WriteOptions& opt, ColumnFamilyHandle* colum
   if (!s.ok()) {
     co_return s;
   }
+  std::cout<<"before AsyncWrite call"<<std::endl;
   auto result = AsyncWrite(opt, &batch);
   co_await result;
+  std::cout<<"resume from AsyncWrite"<<std::endl;
   co_return result.result();
 }
 

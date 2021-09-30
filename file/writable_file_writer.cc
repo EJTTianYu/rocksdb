@@ -383,8 +383,10 @@ async_result WritableFileWriter::AsyncFlush() {
         co_await result;
         s = result.io_result();
       } else {
+        std::cout<<"before AsyncWriteBuffered call"<<std::endl;
         auto result = AsyncWriteBuffered(buf_.BufferStart(), buf_.CurrentSize());
         co_await result;
+        std::cout<<"resume from AsyncWriteBuffered"<<std::endl;
         s = result.io_result();
       }
     }
@@ -738,8 +740,10 @@ async_result WritableFileWriter::AsyncWriteBuffered(const char* data, size_t siz
           co_await result;
           s = result.io_result();
         } else {
+          std::cout<<"before AsyncAppend call"<<std::endl;
           auto result = writable_file_->AsyncAppend(Slice(src, allowed), IOOptions(), nullptr);
           co_await result;
+          std::cout<<"resume from AsyncAppend"<<std::endl;
           s = result.io_result();
         }
         SetPerfLevel(prev_perf_level);
