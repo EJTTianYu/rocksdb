@@ -36,7 +36,7 @@ struct async_result {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
 //      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
       ret_back ret{};
-      ret_back_promise = &ret;
+      ret_back_promise = ret;
       return async_result(h, ret);
     }
 
