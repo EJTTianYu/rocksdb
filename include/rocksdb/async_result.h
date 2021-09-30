@@ -17,6 +17,11 @@ struct file_page;
 
 struct async_result {
   struct promise_type {
+    ~promise_type() {
+      auto hh = std::coroutine_handle<promise_type>::from_promise(*this);
+      std::cout <<"handle:" << hh.address() << " done:" << hh.done() << std::endl;
+    }
+
     async_result get_return_object() {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
       std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
@@ -44,7 +49,8 @@ struct async_result {
       result_ = result; 
       result_set_ = true;
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
-      std::cout << "result_set=" << h.promise().result_set_ << std::endl;
+      std::cout << "result_set=" << h.promise().result_set_ << ",address=" <<
+          &h.promise().result_set_ << std::endl;
     }
 
     void return_value(IOStatus io_result) {
@@ -81,7 +87,8 @@ struct async_result {
     } else {
       std::cout<<"h_address"<<h_.address()<<std::endl;
       std::cout<<"h_.done():"<<h_.done()<<"\n";
-      std::cout<<"result_set_:"<<h_.promise().result_set_<<"\n";
+      std::cout<<"result_set_:"<<h_.promise().result_set_<< ",address=" <<
+                               &h_.promise().result_set_ <<"\n";
       return h_.promise().result_set_;
     }
   }
