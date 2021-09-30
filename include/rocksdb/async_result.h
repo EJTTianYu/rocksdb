@@ -35,9 +35,8 @@ struct async_result {
     async_result get_return_object() {
       auto h = std::coroutine_handle<promise_type>::from_promise(*this);
 //      std::cout << "Send back a return_type with handle:" << h.address() << std::endl;
-      ret_back ret{};
-      ret_back_promise = ret;
-      return async_result(h, ret);
+      ret_back_promise = new ret_back{};
+      return async_result(h, *ret_back_promise);
     }
 
     auto initial_suspend() { return std::suspend_never{};}
@@ -54,35 +53,37 @@ struct async_result {
     void unhandled_exception() { std::exit(1); }
 
     void return_value(Status result) {
-      ret_back_promise.result_ = result;
-      ret_back_promise.result_set_ = true;
+      ret_back_promise->result_ = result;
+      ret_back_promise->result_set_ = true;
     }
 
     void return_value(IOStatus io_result) {
-      ret_back_promise.io_result_ = io_result;
-      ret_back_promise.result_set_ = true;
+      ret_back_promise->io_result_ = io_result;
+      ret_back_promise->result_set_ = true;
     }
 
     void return_value(bool posix_write_result) {
-      ret_back_promise.posix_write_result_ = posix_write_result;
-      ret_back_promise.result_set_ = true;
+      ret_back_promise->posix_write_result_ = posix_write_result;
+      ret_back_promise->result_set_ = true;
     }
 
     promise_type* prev_ = nullptr;
-    ret_back ret_back_promise;
+    ret_back *ret_back_promise;
   };
 
   async_result() : async_(false) {}
 
   async_result(bool async, struct file_page* context) : async_(async), context_(context) {}
 
-  async_result(std::coroutine_handle<promise_type> h, ret_back& ret_back) : h_{h}, ret_back_{ret_back} {}
+  async_result(std::coroutine_handle<promise_type> h, ret_back& ret_back) : h_{h} {
+    ret_back_ = &ret_back;
+  }
 
   bool await_ready() const noexcept { 
     if (async_) {
       return false;
     } else {
-      return ret_back_.result_set_;
+      return ret_back_->result_set_;
     }
   }
 
@@ -90,17 +91,17 @@ struct async_result {
 
   void await_resume() const noexcept {}
 
-  Status result() { return ret_back_.result_; }
+  Status result() { return ret_back_->result_; }
 
-  IOStatus io_result() { return ret_back_.io_result_; }
+  IOStatus io_result() { return ret_back_->io_result_; }
 
-  bool posix_result() { return ret_back_.posix_write_result_; }
+  bool posix_result() { return ret_back_->posix_write_result_; }
 
   // test only
-  bool is_result_set() { return ret_back_.result_set_; }
+  bool is_result_set() { return ret_back_->result_set_; }
 
   std::coroutine_handle<promise_type> h_;
-  ret_back ret_back_;
+  ret_back *ret_back_;
   bool async_ = false;
   struct file_page* context_;
 };
