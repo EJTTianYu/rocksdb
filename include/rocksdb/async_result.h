@@ -54,22 +54,22 @@ struct async_result {
     void unhandled_exception() { std::exit(1); }
 
     void return_value(Status result) {
-      ret_back_promise->result_ = result;
-      ret_back_promise->result_set_ = true;
+      ret_back_promise.result_ = result;
+      ret_back_promise.result_set_ = true;
     }
 
     void return_value(IOStatus io_result) {
-      ret_back_promise->io_result_ = io_result;
-      ret_back_promise->result_set_ = true;
+      ret_back_promise.io_result_ = io_result;
+      ret_back_promise.result_set_ = true;
     }
 
     void return_value(bool posix_write_result) {
-      ret_back_promise->posix_write_result_ = posix_write_result;
-      ret_back_promise->result_set_ = true;
+      ret_back_promise.posix_write_result_ = posix_write_result;
+      ret_back_promise.result_set_ = true;
     }
 
     promise_type* prev_ = nullptr;
-    ret_back *ret_back_promise;
+    ret_back ret_back_promise;
   };
 
   async_result() : async_(false) {}
