@@ -1426,7 +1426,8 @@ if(WITH_TOOLS)
     DEPENDS ${tool_deps})
 endif()
 
-option(WITH_EXAMPLES "build with examples" OFF)
+# 构建示例程序
+option(WITH_EXAMPLES "build with examples" ON)
 if(WITH_EXAMPLES)
   add_subdirectory(examples)
 endif()
