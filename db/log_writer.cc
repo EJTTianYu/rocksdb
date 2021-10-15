@@ -105,6 +105,7 @@ IOStatus Writer::AddRecord(const Slice& slice) {
 
   if (s.ok()) {
     if (!manual_flush_) {
+      // 调用
       s = dest_->Flush();
     }
   }

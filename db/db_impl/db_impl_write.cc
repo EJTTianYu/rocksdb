@@ -49,6 +49,7 @@ void DBImpl::SetRecoverableStatePreReleaseCallback(
   recoverable_state_pre_release_callback_.reset(callback);
 }
 
+// 调用
 Status DBImpl::Write(const WriteOptions& write_options, WriteBatch* my_batch) {
   return WriteImpl(write_options, my_batch, nullptr, nullptr);
 }
@@ -64,6 +65,7 @@ Status DBImpl::WriteWithCallback(const WriteOptions& write_options,
 // The main write queue. This is the only write queue that updates LastSequence.
 // When using one write queue, the same sequence also indicates the last
 // published sequence.
+// 调用
 Status DBImpl::WriteImpl(const WriteOptions& write_options,
                          WriteBatch* my_batch, WriteCallback* callback,
                          uint64_t* log_used, uint64_t log_ref,
@@ -114,6 +116,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
         seq_per_batch_ ? kDoAssignOrder : kDontAssignOrder;
     // Otherwise it is WAL-only Prepare batches in WriteCommitted policy and
     // they don't consume sequence.
+    // 调用
     return WriteImplWALOnly(&nonmem_write_thread_, write_options, my_batch,
                             callback, log_used, log_ref, seq_used, batch_cnt,
                             pre_release_callback, assign_order,
@@ -128,6 +131,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
     uint64_t seq = 0;
     // Use a write thread to i) optimize for WAL write, ii) publish last
     // sequence in in increasing order, iii) call pre_release_callback serially
+    // 调用
     Status status = WriteImplWALOnly(
         &write_thread_, write_options, my_batch, callback, log_used, log_ref,
         &seq, sub_batch_cnt, pre_release_callback, kDoAssignOrder,
@@ -325,6 +329,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
     if (!two_write_queues_) {
       if (status.ok() && !write_options.disableWAL) {
         PERF_TIMER_GUARD(write_wal_time);
+        // 调用
         io_s = WriteToWAL(write_group, log_writer, log_used, need_log_sync,
                           need_log_dir_sync, last_sequence + 1);
       }
@@ -333,6 +338,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
         PERF_TIMER_GUARD(write_wal_time);
         // LastAllocatedSequence is increased inside WriteToWAL under
         // wal_write_mutex_ to ensure ordered events in WAL
+        // 调用
         io_s = ConcurrentWriteToWAL(write_group, log_used, &last_sequence,
                                     seq_inc);
       } else {
@@ -437,8 +443,10 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
     // hence provide a simple implementation that is not necessarily efficient.
     if (two_write_queues_) {
       if (manual_wal_flush_) {
+        // 调用
         status = FlushWAL(true);
       } else {
+        // 调用
         status = SyncWAL();
       }
     }
@@ -1071,6 +1079,7 @@ IOStatus DBImpl::WriteToWAL(const WriteBatch& merged_batch,
   if (UNLIKELY(needs_locking)) {
     log_write_mutex_.Lock();
   }
+  // 调用
   IOStatus io_s = log_writer->AddRecord(log_entry);
 
   if (UNLIKELY(needs_locking)) {
@@ -1109,6 +1118,7 @@ IOStatus DBImpl::WriteToWAL(const WriteThread::WriteGroup& write_group,
   WriteBatchInternal::SetSequence(merged_batch, sequence);
 
   uint64_t log_size;
+  // 调用
   io_s = WriteToWAL(*merged_batch, log_writer, log_used, &log_size);
   if (to_be_cached_state) {
     cached_recoverable_state_ = *to_be_cached_state;
@@ -1991,6 +2001,7 @@ Status DB::Put(const WriteOptions& opt, ColumnFamilyHandle* column_family,
     if (!s.ok()) {
       return s;
     }
+    // 调用
     return Write(opt, &batch);
   }
   const Slice* ts = opt.timestamp;
@@ -2008,6 +2019,7 @@ Status DB::Put(const WriteOptions& opt, ColumnFamilyHandle* column_family,
   if (!s.ok()) {
     return s;
   }
+  // 调用
   return Write(opt, &batch);
 }
 

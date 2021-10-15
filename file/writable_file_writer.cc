@@ -298,6 +298,7 @@ IOStatus WritableFileWriter::Flush() {
       if (perform_data_verification_ && buffered_data_with_checksum_) {
         s = WriteBufferedWithChecksum(buf_.BufferStart(), buf_.CurrentSize());
       } else {
+        // 调用
         s = WriteBuffered(buf_.BufferStart(), buf_.CurrentSize());
       }
     }
